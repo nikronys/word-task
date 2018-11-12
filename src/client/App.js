@@ -8,7 +8,7 @@ import devices from './devices.json';
 import {
   Table, TableColumn, TableHeader, TableHeaderCell, TableRow, Title,
   Header, Fields, Footer, Input, Wrapper, Main, GenerateButton, GenerateInput,
-  GenerateTitle,
+  GenerateTitle, ChooseFile, GenerateWrapper, Form,
 } from './styles';
 
 class App extends Component {
@@ -156,7 +156,7 @@ class App extends Component {
               selected={this.state.startDate || null}
               onChange={this.handleChange}
               customInput={<Input />}
-              placeholderText="Click to select a date"
+              placeholderText="Выберите дату"
             />
           </Fields>
           <Table>
@@ -172,9 +172,16 @@ class App extends Component {
             </tbody>
           </Table>
           <Footer>
-            <GenerateTitle>Число строк:</GenerateTitle>
-            <GenerateInput value={this.state.amount} onChange={this.handleInputChange} type="text" />
-            <GenerateButton onClick={this.handleSubmit} type="submit">Сгенерировать</GenerateButton>
+            <Form>
+              <GenerateTitle>Шаблон:</GenerateTitle>
+              <ChooseFile type="file" accept=".dotx, .docx" />
+              <GenerateButton onClick={this.handleFormSubmit} type="submit">Отправить</GenerateButton>
+            </Form>
+            <GenerateWrapper>
+              <GenerateTitle>Число строк:</GenerateTitle>
+              <GenerateInput value={this.state.amount} onChange={this.handleInputChange} type="text" />
+              <GenerateButton onClick={this.handleSubmit} type="submit">Сгенерировать</GenerateButton>
+            </GenerateWrapper>
           </Footer>
         </Main>
       </Wrapper>

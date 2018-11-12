@@ -113,7 +113,7 @@ export const TableColumn = styled.td`
 export const Footer = styled.div`
   width: 100%;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   margin-top: 40px;
 `;
 export const GenerateTitle = styled.h3`
@@ -130,4 +130,19 @@ export const GenerateButton = styled.button`
   background: none;
   border: 1px solid black;
   outline: none;
+`;
+
+export const ChooseFile = styled.input`
+  margin: 0 20px;
+  max-width: 180px;
+`;
+
+export const GenerateWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
+export const Form = styled.form`
+  display: flex;
+  flex-direction: row;
 `;
