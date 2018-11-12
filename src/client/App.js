@@ -1,178 +1,146 @@
 import React, { Component } from 'react';
 import './app.css';
-import DatePicker from "react-datepicker";
-import styled from 'styled-components';
-import moment from "moment";
-import "react-datepicker/dist/react-datepicker.css";
+import momentRandom from 'moment-random';
+import DatePicker from 'react-datepicker';
+import moment from 'moment';
+import 'react-datepicker/dist/react-datepicker.css';
+import devices from './devices.json';
+import {
+  Table, TableColumn, TableHeader, TableHeaderCell, TableRow, Title,
+  Header, Fields, Footer, Input, Wrapper, Main, GenerateButton, GenerateInput,
+  GenerateTitle,
+} from './styles';
 
-const Wrapper = styled.div`
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-const Main = styled.main`
-  border-radius: 10px;
-  min-width: 1000px;
-  border: 1px solid black;
-  display: flex;
-  justify-content: space-between;
-  flex-direction: column;
-  padding: 30px;
-`;
-const Header= styled.header`
-  width: 100%;
-  height: 50px;
-  font-size: 20px;
-`;
-const Fields= styled.section`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  & > * {margin-top: 12px;};
-`;
-const Input= styled.input`
-  padding: 2px;
-  margin: 10px;
-  outline: none;
-  margin: auto;
-  font-size: 15px;
-  &:last-child {
-    margin-bottom: 11px;
-    height: 19px;
-    border: 1px solid #a9a9a9;
-  }
-`;
-const Title= styled.h3`
-  margin: auto;
-`;
-const Table= styled.table`
-  margin-top: 40px;
-  border: 1px solid black;
-  cellpadding: 0;
-  border-spacing: 0;
-`;
-const TableHeader=styled.tr`
-  background-color: lightgray;
-`;
-const TableHeaderCell=styled.th`
-  font-size: 18px;
-  border-right: 1px solid black;
-  padding: 8px 10px;
-  &:first-child {
-    width: 30%;
-    text-align: left;
-  }
-  &:nth-child(2) {
-    width: 22%;
-    text-align: center;
-  }
-  &:nth-child(3) {
-    width: 15%;
-    text-align: right;
-  }
-  &:nth-child(4) {
-    width: 15%;
-    text-align: right;
-  }
-  &:last-child {
-    border-right: 0;
-    width: 18%;
-  }
-`;
-const TableRow=styled.tr`
-
-`;
-const TableColumn=styled.td`
-  font-size: 16px;
-  border-right: 1px solid black;
-  border-top: 1px solid black;
-  padding: 8px 10px;
-  &:first-child {
-    width: 30%;
-    text-align: left;
-    background-color: lightgray;
-  }
-  &:nth-child(2) {
-    width: 22%;
-    text-align: center;
-  }
-  &:nth-child(3) {
-    width: 15%;
-    text-align: right;
-    font-style: italic;
-  }
-  &:nth-child(4) {
-    width: 15%;
-    text-align: right;
-    font-weight: bold;
-  }
-  &:last-child {
-    border-right: 0;
-    width: 18%;
-  }
-`;
-const Footer= styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 40px;
-`;
-const GenerateTitle=styled.h3`
-  padding: 0;
-  margin: 0;
-`;
-const GenerateInput= styled.input`
-  margin: 0 20px;
-  width: 50px;
-  font-size: 15px;
-`;
-const GenerateButton= styled.button`
-  border-radius: 10px;
-  background: none;
-  border: 1px solid black;
-  outline: none;
-`;
 class App extends Component {
   state = {
-    devices: [
-      {
-        name: 'Samsung',
-        date: '24.03.1231',
-        amount: '10',
-        price: '11111'
-      }
-    ],
-    startDate: moment(),
-    amount: 0,
-    inputValue: '',
-    value: 0,
+    devices,
+    startDate: '',
+    amount: '',
+    currentDevices: [],
+    sortType: '',
   }
+
+  componentDidMount() {
+    this.setState(prev => ({ 
+      devices: prev.devices.map((el) => {
+        return {
+          ...el,
+          date: momentRandom('2018-05-30', '2005-01-11').format('L').toString().replace(/\//g, '.'),
+          amount: Math.ceil(Math.random() * 10),
+          price: parseInt(Math.round(400 + Math.random() * (1100-400))).toFixed(2).toString().replace('.', ',')
+        };
+      })
+    }));
+  }
+
   renderRows = () => {
-    return this.state.devices.map((el, i) => {
+    return this.state.currentDevices.map((el, i) => {
       return <TableRow key={i}>
-        <TableColumn>{el.name}</TableColumn>
+        <TableColumn>{el.brand === '' ? el.model : el.name === '' ? el.brand + ' ' + el.model : el.brand + ' ' + el.name}</TableColumn>
         <TableColumn>{el.date}</TableColumn>
-        <TableColumn>{el.amount + ' шт.'}</TableColumn>
-        <TableColumn>{parseInt(el.price).toFixed(2).toString().replace('.', ',')}</TableColumn>
+        <TableColumn>{`${el.amount} шт.`}</TableColumn>
+        <TableColumn>{el.price}</TableColumn>
         <TableColumn></TableColumn>
       </TableRow>
     })
-  }
+  };
+
   handleSubmit = () => {
-    this.setState(prev => ({ value: prev.inputValue }));
-  }
-  handleChange = (event) => {
-    this.setState({ inputValue: event.target.value })
-  }
+    let newDevices = this.state.devices;
+    if (newDevices.length < this.state.amount) {
+      do {
+        newDevices.push(...this.state.devices);
+      } while (newDevices.length < this.state.amount)
+    }
+    function getRandom(arr, n) {
+      let result = new Array(n),
+          len = arr.length,
+          taken = new Array(len);
+      if (n > len)
+          throw new RangeError("getRandom: more elements taken than available");
+      while (n--) {
+          var x = Math.floor(Math.random() * len);
+          result[n] = arr[x in taken ? taken[x] : x];
+          taken[x] = --len in taken ? taken[len] : len;
+      }
+      return result;
+    }
+    const newArray = getRandom(newDevices, this.state.amount);
+    this.setState({ currentDevices: newArray });
+  };
+
+  handleInputChange = (event) => {
+    this.setState({ amount: event.target.value });
+  };
+
   handleChange = (date) => {
     this.setState({
       startDate: date
     });
+  };
+
+  onSort = (type) => () => {
+    const { sortType } = this.state;
+    switch (type) {
+      case 'name':
+        if (sortType && sortType === 'name') {
+          this.setState(prev => ({ 
+            currentDevices: prev.currentDevices.sort((a, b) => b.brand.localeCompare(a.brand)),
+            sortType: '',
+          }));
+        } else {
+          this.setState(prev => ({ 
+            currentDevices: prev.currentDevices.sort((a, b) => a.brand.localeCompare(b.brand)),
+            sortType: 'name',
+          }));
+        }
+        break;
+      case 'date':
+        if (sortType && sortType === 'date') {
+          this.setState(prev => ({ 
+            currentDevices: prev.currentDevices.sort((a, b) => moment(b.date, "MM DD YYYY") - moment(a.date, "MM DD YYYY") ),
+            sortType: '',
+          }));
+        } else {
+          this.setState(prev => ({ 
+            currentDevices: prev.currentDevices.sort((a, b) => moment(a.date, "MM DD YYYY") - moment(b.date, "MM DD YYYY")),
+            sortType: 'date',
+          }));
+        }
+        break;
+      case 'amount':
+        if (sortType && sortType === 'amount') {
+          this.setState(prev => ({ 
+            currentDevices: prev.currentDevices.sort((a, b) => b.amount - a.amount ),
+            sortType: '',
+          }));
+        } else {
+          this.setState(prev => ({ 
+            currentDevices: prev.currentDevices.sort((a, b) => a.amount - b.amount
+            ),
+            sortType: 'amount',
+          }
+          ));
+        }
+        break;
+      case 'price':
+      if (sortType && sortType === 'price') {
+        this.setState(prev => ({ 
+          currentDevices: prev.currentDevices.sort((a, b) => b.price.slice(0, b.price.indexOf(',')) - a.price.slice(0, a.price.indexOf(',')) ),
+          sortType: '',
+        }));
+      } else {
+        this.setState(prev => ({ 
+          currentDevices: prev.currentDevices.sort((a, b) => a.price.slice(0, a.price.indexOf(',')) - b.price.slice(0, b.price.indexOf(',')) ),
+          sortType: 'price',
+        }));
+      }
+        break;
+      default:
+        break;
+    }
   }
+
   render() {
     return (
       <Wrapper>
@@ -185,27 +153,28 @@ class App extends Component {
             <Input />
             <Title>Дата:</Title>
             <DatePicker
-              selected={this.state.startDate}
+              selected={this.state.startDate || null}
               onChange={this.handleChange}
               customInput={<Input />}
+              placeholderText="Click to select a date"
             />
           </Fields>
           <Table>
             <tbody>
               <TableHeader>
-                <TableHeaderCell>Наименование</TableHeaderCell>
-                <TableHeaderCell>Дата выхода на рынок</TableHeaderCell>
-                <TableHeaderCell>Количество</TableHeaderCell>
-                <TableHeaderCell>Сумма за 1 ед.</TableHeaderCell>
+                <TableHeaderCell onClick={this.onSort('name')}>Наименование</TableHeaderCell>
+                <TableHeaderCell onClick={this.onSort('date')}>Дата выхода на рынок</TableHeaderCell>
+                <TableHeaderCell onClick={this.onSort('amount')}>Количество</TableHeaderCell>
+                <TableHeaderCell onClick={this.onSort('price')}>Сумма за 1 ед.</TableHeaderCell>
                 <TableHeaderCell></TableHeaderCell>
               </TableHeader>
-              {this.renderRows(this.state.amount)}
+              {this.renderRows()}
             </tbody>
           </Table>
           <Footer>
             <GenerateTitle>Число строк:</GenerateTitle>
-              <GenerateInput value={this.state.inputValue} onChange={this.handleChange} type='text'/>
-              <GenerateButton onClick={this.handleSubmit} type='submit'>Сгенерировать</GenerateButton>
+            <GenerateInput value={this.state.amount} onChange={this.handleInputChange} type="text" />
+            <GenerateButton onClick={this.handleSubmit} type="submit">Сгенерировать</GenerateButton>
           </Footer>
         </Main>
       </Wrapper>
