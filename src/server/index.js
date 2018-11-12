@@ -4,6 +4,12 @@ const cors = require('cors');
 const multer = require('multer');
 const util = require('util');
 const { exec } = require('child_process');
+const fs = require('fs');
+const dir = '/../../files';
+
+if (!fs.existsSync(__dirname + dir)){
+  fs.mkdirSync(__dirname + dir);
+}
 
 let filename = '';
 

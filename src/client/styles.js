@@ -33,12 +33,13 @@ export const Input = styled.input`
   padding: 2px;
   margin: 10px;
   outline: none;
-  margin: auto;
+  margin: auto 10px;
   font-size: 15px;
   &:last-child {
     margin-bottom: 11px;
     height: 21px;
     border: 1px solid #a9a9a9;
+    margin-right: 0;
   }
 `;
 export const Title = styled.h3`
@@ -134,7 +135,7 @@ export const GenerateButton = styled.button`
 
 export const ChooseFile = styled.input`
   margin: auto 20px;
-  max-width: 180px;
+  max-width: 230px;
 `;
 
 export const GenerateWrapper = styled.div`
