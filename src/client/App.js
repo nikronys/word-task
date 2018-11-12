@@ -3,6 +3,7 @@ import './app.css';
 import momentRandom from 'moment-random';
 import DatePicker from 'react-datepicker';
 import moment from 'moment';
+import axios from 'axios';
 import 'react-datepicker/dist/react-datepicker.css';
 import devices from './devices.json';
 import {
@@ -47,30 +48,34 @@ class App extends Component {
 
   handleSubmit = () => {
     let newDevices = this.state.devices;
-    if (newDevices.length < this.state.amount) {
+    if (newDevices.length < +this.state.amount) {
       do {
         newDevices.push(...this.state.devices);
-      } while (newDevices.length < this.state.amount)
+      } while (newDevices.length < +this.state.amount)
     }
     function getRandom(arr, n) {
       let result = new Array(n),
-          len = arr.length,
-          taken = new Array(len);
+        len = arr.length,
+        taken = new Array(len);
       if (n > len)
-          throw new RangeError("getRandom: more elements taken than available");
+        throw new RangeError("getRandom: more elements taken than available");
       while (n--) {
-          var x = Math.floor(Math.random() * len);
-          result[n] = arr[x in taken ? taken[x] : x];
-          taken[x] = --len in taken ? taken[len] : len;
+        var x = Math.floor(Math.random() * len);
+        result[n] = arr[x in taken ? taken[x] : x];
+        taken[x] = --len in taken ? taken[len] : len;
       }
       return result;
     }
-    const newArray = getRandom(newDevices, this.state.amount);
+    const newArray = getRandom(newDevices, +this.state.amount);
     this.setState({ currentDevices: newArray });
   };
 
   handleInputChange = (event) => {
-    this.setState({ amount: event.target.value });
+    if (+event.target.value < 0 || isNaN(+event.target.value)) {
+      this.setState({ amount: '' });
+    } else {
+      this.setState({ amount: event.target.value });
+    }
   };
 
   handleChange = (date) => {
@@ -80,7 +85,12 @@ class App extends Component {
   };
 
   handleFormSubmit = (event) => {
-    
+    event.preventDefault();
+    const data = new FormData();
+    data.append('document', event.target.document.files[0]);
+    axios.post('http://localhost:8080/form', data, {headers: { 'Content-Type': 'multipart/form-data' }}).then((response) => {
+      console.log(response); // do something with the response
+    });
   }
 
   onSort = type => () => {
@@ -176,10 +186,10 @@ class App extends Component {
             </tbody>
           </Table>
           <Footer>
-            <Form>
+            <Form encType='multipart/form-data' onSubmit={this.handleFormSubmit}>
               <GenerateTitle>Шаблон:</GenerateTitle>
-              <ChooseFile type="file" accept=".dotx, .docx" />
-              <GenerateButton onClick={this.handleFormSubmit} type="submit">Отправить</GenerateButton>
+              <ChooseFile type="file" accept=".dotx, .docx" name="document" />
+              <GenerateButton type="submit">Создать документ</GenerateButton>
             </Form>
             <GenerateWrapper>
               <GenerateTitle>Число строк:</GenerateTitle>
