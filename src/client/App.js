@@ -79,7 +79,11 @@ class App extends Component {
     });
   };
 
-  onSort = (type) => () => {
+  handleFormSubmit = (event) => {
+    
+  }
+
+  onSort = type => () => {
     const { sortType } = this.state;
     switch (type) {
       case 'name':
@@ -124,17 +128,17 @@ class App extends Component {
         }
         break;
       case 'price':
-      if (sortType && sortType === 'price') {
-        this.setState(prev => ({ 
-          currentDevices: prev.currentDevices.sort((a, b) => b.price.slice(0, b.price.indexOf(',')) - a.price.slice(0, a.price.indexOf(',')) ),
-          sortType: '',
-        }));
-      } else {
-        this.setState(prev => ({ 
-          currentDevices: prev.currentDevices.sort((a, b) => a.price.slice(0, a.price.indexOf(',')) - b.price.slice(0, b.price.indexOf(',')) ),
-          sortType: 'price',
-        }));
-      }
+        if (sortType && sortType === 'price') {
+          this.setState(prev => ({ 
+            currentDevices: prev.currentDevices.sort((a, b) => b.price.slice(0, b.price.indexOf(',')) - a.price.slice(0, a.price.indexOf(',')) ),
+            sortType: '',
+          }));
+        } else {
+          this.setState(prev => ({ 
+            currentDevices: prev.currentDevices.sort((a, b) => a.price.slice(0, a.price.indexOf(',')) - b.price.slice(0, b.price.indexOf(',')) ),
+            sortType: 'price',
+          }));
+        }
         break;
       default:
         break;

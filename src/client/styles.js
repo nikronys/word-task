@@ -133,7 +133,7 @@ export const GenerateButton = styled.button`
 `;
 
 export const ChooseFile = styled.input`
-  margin: 0 20px;
+  margin: auto 20px;
   max-width: 180px;
 `;
 
