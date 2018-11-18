@@ -9,7 +9,7 @@ import devices from './devices.json';
 import {
   Table, TableColumn, TableHeader, TableHeaderCell, TableRow, Title,
   Header, Fields, Footer, Input, Wrapper, Main, GenerateButton, GenerateInput,
-  GenerateTitle, ChooseFile, GenerateWrapper, Form,
+  GenerateTitle, ChooseFile, GenerateWrapper, Form, Template,
 } from './styles';
 
 class App extends Component {
@@ -19,6 +19,9 @@ class App extends Component {
     amount: '',
     currentDevices: [],
     sortType: '',
+    hasFile: false,
+    name: '',
+    contract: '',
   }
 
   componentDidMount() {
@@ -37,16 +40,15 @@ class App extends Component {
   renderRows = () => {
     return this.state.currentDevices.map((el, i) => {
       return <TableRow key={i}>
-        <TableColumn>{el.brand === '' ? el.model : el.name === '' ? el.brand + ' ' + el.model : el.brand + ' ' + el.name}</TableColumn>
+        <TableColumn>{el.device}</TableColumn>
         <TableColumn>{el.date}</TableColumn>
-        <TableColumn>{`${el.amount} шт.`}</TableColumn>
+        <TableColumn>{el.amount}</TableColumn>
         <TableColumn>{el.price}</TableColumn>
-        <TableColumn></TableColumn>
       </TableRow>
     })
   };
 
-  handleSubmit = () => {
+  handleGenerate = () => {
     let newDevices = this.state.devices;
     if (newDevices.length < +this.state.amount) {
       do {
@@ -66,8 +68,17 @@ class App extends Component {
       }
       return result;
     }
-    const newArray = getRandom(newDevices, +this.state.amount);
-    this.setState({ currentDevices: newArray });
+    const newArray = getRandom(newDevices, +this.state.amount)
+    const extendedArray = newArray.map((el) => {
+      return {
+        price: el.price,
+        amount: el.amount+ ' шт.',
+        date: el.date,
+        device: `${el.brand === '' ? el.model : el.name === '' ? el.brand + ' ' + el.model : el.brand + ' ' + el.name}`
+      }
+    });
+    const a = Object.assign({}, extendedArray);
+    this.setState({ currentDevices: Object.values(a) });
   };
 
   handleInputChange = (event) => {
@@ -84,13 +95,41 @@ class App extends Component {
     });
   };
 
+  handleNameChange = (event) => {
+    this.setState({ name: event.target.value })
+  }
+
+  handleContractChange = (event) => {
+    this.setState({ contract: event.target.value })
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { name, date, contract, table } = this.state;
+    console.log(prevState.table === this.state.table)
+    if (prevState.hasFile && (prevState.name !== name || prevState.date !== date || prevState.contract !== contract || prevState.table !== table)) {
+      const data = {
+        name: prevState.name,
+        date: prevState.date,
+        contract: prevState.contract,
+        table: prevState.currentDevices,
+      }
+
+      axios.post('http://localhost:8080/update', { ...data } ).then((response) => { console.log(response) }).catch((error)=>console.log(error))
+    }
+  }
+
   handleFormSubmit = (event) => {
     event.preventDefault();
     const data = new FormData();
     data.append('document', event.target.document.files[0]);
+    data.append('name', event.target.name.value);
+    data.append('date', this.state.startDate);
+    data.append('contract', event.target.contract.value);
+    data.append('table', JSON.stringify(this.state.currentDevices))
     axios.post('http://localhost:8080/form', data, {headers: { 'Content-Type': 'multipart/form-data' }}).then((response) => {
       console.log(response); // do something with the response
     });
+    this.setState({ hasFile: true })
   }
 
   onSort = type => () => {
@@ -99,12 +138,12 @@ class App extends Component {
       case 'name':
         if (sortType && sortType === 'name') {
           this.setState(prev => ({ 
-            currentDevices: prev.currentDevices.sort((a, b) => b.brand.localeCompare(a.brand)),
+            currentDevices: prev.currentDevices.sort((a, b) => b.device.localeCompare(a.device)),
             sortType: '',
           }));
         } else {
           this.setState(prev => ({ 
-            currentDevices: prev.currentDevices.sort((a, b) => a.brand.localeCompare(b.brand)),
+            currentDevices: prev.currentDevices.sort((a, b) => a.device.localeCompare(b.device)),
             sortType: 'name',
           }));
         }
@@ -125,12 +164,12 @@ class App extends Component {
       case 'amount':
         if (sortType && sortType === 'amount') {
           this.setState(prev => ({ 
-            currentDevices: prev.currentDevices.sort((a, b) => b.amount - a.amount ),
+            currentDevices: prev.currentDevices.sort((a, b) => +b.amount.substring(0, b.amount.indexOf(' ')) - +a.amount.substring(0, a.amount.indexOf(' ')) ),
             sortType: '',
           }));
         } else {
           this.setState(prev => ({ 
-            currentDevices: prev.currentDevices.sort((a, b) => a.amount - b.amount
+            currentDevices: prev.currentDevices.sort((a, b) => +a.amount.substring(0, a.amount.indexOf(' '))-b.amount.substring(0, b.amount.indexOf(' '))
             ),
             sortType: 'amount',
           }
@@ -159,17 +198,18 @@ class App extends Component {
     return (
       <Wrapper>
         <Main>
+          <Form onSubmit={this.handleFormSubmit}>
           <Header>Климович Алексей Иванович, 4 курс, 4 группа, 2018</Header>
           <Fields>
             <Title>ФИО директора:</Title>
-            <Input />
+            <Input type="text" name="name" onChange={this.handleNameChange} value={this.state.name} />
             <Title>Номер постановления:</Title>
-            <Input />
+            <Input type="text" name="contract" onChange={this.handleContractChange} value={this.state.contract} />
             <Title>Дата:</Title>
             <DatePicker
               selected={this.state.startDate || null}
               onChange={this.handleChange}
-              customInput={<Input />}
+              customInput={<Input type="text" name="date"/>}
               placeholderText="Выберите дату"
             />
           </Fields>
@@ -180,23 +220,23 @@ class App extends Component {
                 <TableHeaderCell onClick={this.onSort('date')}>Дата выхода на рынок</TableHeaderCell>
                 <TableHeaderCell onClick={this.onSort('amount')}>Количество</TableHeaderCell>
                 <TableHeaderCell onClick={this.onSort('price')}>Сумма за 1 ед.</TableHeaderCell>
-                <TableHeaderCell></TableHeaderCell>
               </TableHeader>
               {this.renderRows()}
             </tbody>
           </Table>
           <Footer>
-            <Form encType='multipart/form-data' onSubmit={this.handleFormSubmit}>
+            <Template>
               <GenerateTitle>Шаблон:</GenerateTitle>
               <ChooseFile type="file" accept=".dotx, .docx" name="document" />
               <GenerateButton type="submit">Создать документ</GenerateButton>
-            </Form>
+            </Template>
             <GenerateWrapper>
               <GenerateTitle>Число строк:</GenerateTitle>
               <GenerateInput value={this.state.amount} onChange={this.handleInputChange} type="text" />
-              <GenerateButton onClick={this.handleSubmit} type="submit">Сгенерировать</GenerateButton>
+              <GenerateButton onClick={this.handleGenerate} type='button'>Сгенерировать</GenerateButton>
             </GenerateWrapper>
           </Footer>
+          </Form>
         </Main>
       </Wrapper>
     );

@@ -6,6 +6,7 @@ export const Wrapper = styled.div`
   justify-content: center;
   align-items: center;
   margin: 50px 0;
+  overflow-x: hidden;
 `;
 export const Main = styled.main`
   border-radius: 10px;
@@ -15,6 +16,7 @@ export const Main = styled.main`
   justify-content: space-between;
   flex-direction: column;
   padding: 30px;
+  overflow-x: hidden;
 `;
 export const Header = styled.header`
   width: 100%;
@@ -50,6 +52,7 @@ export const Table = styled.table`
   border: 1px solid black;
   cellpadding: 0;
   border-spacing: 0;
+  width: 100%;
 `;
 export const TableHeader = styled.tr`
   background-color: lightgray;
@@ -63,20 +66,17 @@ export const TableHeaderCell = styled.th`
     text-align: left;
   }
   &:nth-child(2) {
-    width: 22%;
+    width: 25%;
     text-align: center;
   }
   &:nth-child(3) {
-    width: 15%;
+    width: 20%;
     text-align: right;
   }
   &:nth-child(4) {
-    width: 15%;
+    width: 25%;
     text-align: right;
-  }
-  &:last-child {
     border-right: 0;
-    width: 18%;
   }
 `;
 export const TableRow = styled.tr`
@@ -93,22 +93,19 @@ export const TableColumn = styled.td`
     background-color: lightgray;
   }
   &:nth-child(2) {
-    width: 22%;
+    width: 25%;
     text-align: center;
   }
   &:nth-child(3) {
-    width: 15%;
+    width: 20%;
     text-align: right;
     font-style: italic;
   }
   &:nth-child(4) {
-    width: 15%;
+    width: 25%;
     text-align: right;
-    font-weight: bold;
-  }
-  &:last-child {
     border-right: 0;
-    width: 18%;
+    font-weight: bold;
   }
 `;
 export const Footer = styled.div`
@@ -144,6 +141,10 @@ export const GenerateWrapper = styled.div`
 `;
 
 export const Form = styled.form`
+
+`;
+
+export const Template = styled.div`
   display: flex;
   flex-direction: row;
 `;
