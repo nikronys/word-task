@@ -12,6 +12,7 @@ const bodyParser = require('body-parser');
 const moment = require('moment');
 const dir = '/../../files';
 const createReport = require('docx-templates');
+const mammoth = require("mammoth");
 
 if (!fs.existsSync(__dirname + dir)){
   fs.mkdirSync(__dirname + dir);
@@ -51,8 +52,8 @@ app.get('/', (req, res) => {
   res.send('Сервер')
 })
 
-app.post('/form', uploads, (req, res) => {
-  createReport({
+app.post('/form', uploads, async (req, res) => {
+  await createReport({
     template: `files/${filename}`,
     output: `files/${filename}`,
     data: {
@@ -62,7 +63,22 @@ app.post('/form', uploads, (req, res) => {
       table: JSON.parse(req.body.table)
     },
   });
-  exec(getCommandLine() + " " + __dirname + `/../../files/${filename}`, (error) => console.log(error));
+  await mammoth.convertToHtml({path: `files/${filename}`})
+    .then(function(result){
+        var html = result.value; // The generated HTML
+        var messages = result.messages; // Any messages, such as warnings during conversion
+        const newHTML = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${result.value}</body></html>`;
+        fs.writeFile("generate.html", newHTML, function(err) {
+          if(err) {
+              return console.log(err);
+          }
+      
+          console.log("The file was saved!");
+      }, () => exec(getCommandLine() + " " + __dirname + `/../../generate.html`, (error) => console.log(error))); 
+    })
+    .done();
+
+  await exec(getCommandLine() + " " + __dirname + `/../../files/${filename}`, (error) => console.log(error));
 });
 
 app.post('/update', (req, res) => {
